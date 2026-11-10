@@ -14,6 +14,8 @@ check() { # check "mô tả" "giá trị thực tế" "giá trị mong đợi"
 
 echo "== Repo $OWNER/$REPO"
 check "repo là public" "$(gh api "repos/$OWNER/$REPO" --jq .visibility)" "public"
+DEFAULT_BRANCH=$(gh api "repos/$OWNER/$REPO" --jq .default_branch)
+check "nhánh mặc định là main" "$DEFAULT_BRANCH" "main"
 
 for b in main dev stg; do
   echo "== Nhánh $b"
@@ -56,7 +58,13 @@ for b in main dev stg; do
   echo "direct push $(date +%s)" >> direct-push.txt
   git add direct-push.txt && git commit -qm "thử push thẳng vào $b"
   expect_blocked "push thẳng vào $b" origin "$b"
-  expect_blocked "xóa nhánh $b" origin --delete "$b"
+  if [ "$b" = "$DEFAULT_BRANCH" ]; then
+    # GitHub luôn cấm xóa nhánh mặc định trước cả khi xét branch protection,
+    # nên thử xóa không chứng minh được gì. allow_deletions đã kiểm tra qua API ở trên.
+    echo "  ⏭️  bỏ qua thử xóa $b (nhánh mặc định — GitHub luôn cấm xóa)"
+  else
+    expect_blocked "xóa nhánh $b" origin --delete "$b"
+  fi
 done
 cd / && rm -rf "$TMP"
 
