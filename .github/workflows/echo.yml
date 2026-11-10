@@ -1,0 +1,12 @@
+name: Echo 123
+
+on:
+  push:              # chạy khi push code
+  workflow_dispatch: # cho phép bấm chạy tay trên GitHub
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: In ra 123
+        run: echo 123
