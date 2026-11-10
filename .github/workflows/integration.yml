@@ -45,3 +45,11 @@ jobs:
       - name: Dọn dẹp (luôn chạy, kể cả khi test fail)
         if: always()
         run: terraform destroy -input=false -auto-approve
+
+      - name: Dọn dẹp dự phòng (nếu destroy lỗi thì xóa thẳng repo tạm)
+        if: always()
+        run: |
+          if gh api "repos/$OWNER/$REPO" --silent 2>/dev/null; then
+            echo "Repo tạm vẫn còn => xóa bằng gh"
+            gh repo delete "$OWNER/$REPO" --yes
+          fi

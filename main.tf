@@ -45,6 +45,10 @@ resource "github_branch_protection" "protect_branches" {
   repository_id = github_repository.my_repo.node_id
   pattern       = each.key
 
+  # Bắt buộc thứ tự: tạo nhánh TRƯỚC rồi mới bảo vệ; khi destroy thì gỡ bảo vệ
+  # TRƯỚC rồi mới xóa nhánh (nếu không GitHub trả 422 Cannot delete this branch).
+  depends_on = [github_branch.dev_branch, github_branch.stg_branch]
+
   # Ngăn chặn force push và xóa nhánh
   allows_force_pushes = false
   allows_deletions    = false

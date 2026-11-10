@@ -31,6 +31,21 @@ for b in main dev stg; do
 done
 
 # Kiểm tra HÀNH VI thật: push thẳng vào từng nhánh phải bị GitHub từ chối
+# Push phải thất bại VÀ lý do phải là bảo vệ nhánh (GH006/GH013),
+# không phải lỗi quyền hay mạng — tránh "pass giả".
+expect_blocked() { # expect_blocked "mô tả" <tham số git push...>
+  local desc=$1; shift
+  local out
+  if out=$(git push "$@" 2>&1); then
+    fail "$desc THÀNH CÔNG — bảo vệ không hoạt động!"
+  elif grep -qiE 'GH006|GH013|protected branch' <<<"$out"; then
+    pass "$desc bị chặn bởi branch protection"
+  else
+    fail "$desc thất bại nhưng KHÔNG phải do branch protection:"
+    sed 's/^/       /' <<<"$out"
+  fi
+}
+
 echo "== Thử push trực tiếp (phải bị chặn)"
 TMP=$(mktemp -d)
 git clone -q "https://x-access-token:${GH_TOKEN}@github.com/$OWNER/$REPO.git" "$TMP/repo"
@@ -40,17 +55,8 @@ for b in main dev stg; do
   git checkout -q "$b"
   echo "direct push $(date +%s)" >> direct-push.txt
   git add direct-push.txt && git commit -qm "thử push thẳng vào $b"
-  if git push -q origin "$b" 2>/dev/null; then
-    fail "push thẳng vào $b THÀNH CÔNG — bảo vệ không hoạt động!"
-  else
-    pass "push thẳng vào $b bị chặn"
-  fi
-  # Thử xóa nhánh
-  if git push -q origin --delete "$b" 2>/dev/null; then
-    fail "xóa nhánh $b THÀNH CÔNG — bảo vệ không hoạt động!"
-  else
-    pass "xóa nhánh $b bị chặn"
-  fi
+  expect_blocked "push thẳng vào $b" origin "$b"
+  expect_blocked "xóa nhánh $b" origin --delete "$b"
 done
 cd / && rm -rf "$TMP"
 
