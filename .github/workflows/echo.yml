@@ -10,3 +10,8 @@ jobs:
     steps:
       - name: In ra 123
         run: echo 123
+
+      - name: Lấy tổ chức hiện tại
+        run: |
+          echo "Tổ chức / owner: ${{ github.repository_owner }}"
+          echo "Repo: ${{ github.repository }}"
