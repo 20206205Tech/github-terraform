@@ -1,0 +1,46 @@
+name: Tạo repo bằng Terraform
+
+on:
+  workflow_dispatch: # cho phép bấm chạy tay trên GitHub
+    inputs:
+      repo_name:
+        description: "Tên repo cần tạo (bắt buộc)"
+        required: true
+        type: string
+      org:
+        description: "Tên tổ chức (để trống = tổ chức hiện tại)"
+        required: false
+        default: ""
+
+env:
+  ORG: ${{ inputs.org || github.repository_owner }}
+  REPO_NAME: ${{ inputs.repo_name }}
+
+jobs:
+  create-repo:
+    runs-on: ubuntu-latest
+    env:
+      # Token mặc định (github.token) KHÔNG có quyền tạo repo => dùng PAT lưu trong secrets
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      TF_VAR_github_owner: ${{ inputs.org || github.repository_owner }}
+      TF_VAR_repo_name: ${{ inputs.repo_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Thông tin
+        run: |
+          echo "Tổ chức: $ORG"
+          echo "Repo sẽ tạo: $ORG/$REPO_NAME"
+
+      - name: Cài Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        run: terraform apply -input=false -auto-approve tfplan

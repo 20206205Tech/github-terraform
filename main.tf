@@ -9,18 +9,35 @@ terraform {
 
 # Cấu hình GitHub Provider
 # Lưu ý: Token nên được truyền qua biến môi trường GITHUB_TOKEN
+variable "github_owner" {
+  description = "Tổ chức / user sở hữu repo"
+  type        = string
+  default     = "nghiavip"
+}
+
+variable "repo_name" {
+  description = "Tên repo cần tạo (bắt buộc)"
+  type        = string
+  # Không có default => bắt buộc phải truyền vào
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9._-]+$", var.repo_name))
+    error_message = "Tên repo chỉ được chứa chữ, số, dấu chấm, gạch ngang và gạch dưới."
+  }
+}
+
 provider "github" {
-  owner = "nghiavip"
+  owner = var.github_owner
 }
 
 # 1. Tạo Repository
 resource "github_repository" "my_repo" {
-  name        = "example-terraform-repo"
+  name        = var.repo_name
   description = "Repository được tạo quản lý bằng Terraform"
   # visibility  = "private" # hoặc "public"
-  visibility  = "public"
+  visibility = "public"
   # Khởi tạo commit đầu tiên (README) để nhánh 'main' được tự động tạo
-  auto_init   = true 
+  auto_init = true
 }
 
 # 2. Tạo các nhánh dev và stg từ nhánh main
