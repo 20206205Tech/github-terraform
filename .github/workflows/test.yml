@@ -1,0 +1,25 @@
+name: Test Terraform
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Kiểm tra format
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init (không cần backend/token)
+        run: terraform init -input=false -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Unit test (mock provider, không gọi GitHub thật)
+        run: terraform test
