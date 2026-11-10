@@ -1,4 +1,4 @@
-name: Integration test (GitHub thật)
+name: Integration test
 
 # Tạo một repo tạm THẬT bằng Terraform, kiểm tra, rồi xóa.
 # PAT (secrets.GH_PAT) cần scope: repo + delete_repo (để dọn dẹp).
