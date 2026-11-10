@@ -8,24 +8,8 @@ terraform {
 }
 
 # Cấu hình GitHub Provider
-# Lưu ý: Token nên được truyền qua biến môi trường GITHUB_TOKEN
-variable "github_owner" {
-  description = "Tổ chức / user sở hữu repo"
-  type        = string
-  default     = "nghiavip"
-}
-
-variable "repo_name" {
-  description = "Tên repo cần tạo (bắt buộc)"
-  type        = string
-  # Không có default => bắt buộc phải truyền vào
-
-  validation {
-    condition     = can(regex("^[A-Za-z0-9._-]+$", var.repo_name))
-    error_message = "Tên repo chỉ được chứa chữ, số, dấu chấm, gạch ngang và gạch dưới."
-  }
-}
-
+# Lưu ý: Token được truyền qua biến môi trường GITHUB_TOKEN (từ secret GH_PAT)
+# Các biến được khai báo trong variables.tf
 provider "github" {
   owner = var.github_owner
 }
