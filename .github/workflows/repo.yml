@@ -26,7 +26,7 @@ jobs:
       TF_VAR_repo_name: ${{ inputs.repo_name }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Thông tin
         run: |
@@ -34,7 +34,7 @@ jobs:
           echo "Repo sẽ tạo: $ORG/$REPO_NAME"
 
       - name: Cài Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
 
       - name: Terraform init
         run: terraform init -input=false
