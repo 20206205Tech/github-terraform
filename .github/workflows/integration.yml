@@ -1,0 +1,47 @@
+name: Integration test (GitHub thật)
+
+# Tạo một repo tạm THẬT bằng Terraform, kiểm tra, rồi xóa.
+# PAT (secrets.GH_PAT) cần scope: repo + delete_repo (để dọn dẹp).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["**.tf", "tests/**", ".github/workflows/integration.yml"]
+
+concurrency:
+  group: integration-test
+  cancel-in-progress: false
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }} # cho Terraform provider
+      GH_TOKEN: ${{ secrets.GH_PAT }}     # cho gh CLI / git trong verify.sh
+      OWNER: ${{ github.repository_owner }}
+      REPO: tf-it-${{ github.run_id }}-${{ github.run_attempt }}
+      TF_VAR_github_owner: ${{ github.repository_owner }}
+      TF_VAR_repo_name: tf-it-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Unit test trước
+        run: terraform test
+
+      - name: Tạo repo tạm thật
+        run: terraform apply -input=false -auto-approve
+
+      - name: Kiểm tra repo thật
+        run: bash tests/integration/verify.sh
+
+      - name: Chạy apply lần 2 — phải không có thay đổi (idempotent)
+        run: terraform plan -input=false -detailed-exitcode
+
+      - name: Dọn dẹp (luôn chạy, kể cả khi test fail)
+        if: always()
+        run: terraform destroy -input=false -auto-approve
