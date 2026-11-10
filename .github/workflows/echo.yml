@@ -3,6 +3,14 @@ name: Echo 123
 on:
   push:              # chạy khi push code
   workflow_dispatch: # cho phép bấm chạy tay trên GitHub
+    inputs:
+      org:
+        description: "Tên tổ chức (để trống = tổ chức hiện tại)"
+        required: false
+        default: ""
+
+env:
+  ORG: ${{ inputs.org || github.repository_owner }}
 
 jobs:
   echo:
@@ -13,5 +21,5 @@ jobs:
 
       - name: Lấy tổ chức hiện tại
         run: |
-          echo "Tổ chức / owner: ${{ github.repository_owner }}"
+          echo "Tổ chức: $ORG"
           echo "Repo: ${{ github.repository }}"
