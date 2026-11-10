@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Provider Terraform (integrations/github) + .terraform.lock.hcl
+  - package-ecosystem: "terraform"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Các action dùng trong .github/workflows/*.yml
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"] # gộp mọi bản cập nhật action vào 1 PR
